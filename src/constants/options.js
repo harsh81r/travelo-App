@@ -1,7 +1,5 @@
 
 
-
-
 export const SelectTravelesList =[
 
 {
@@ -59,4 +57,4 @@ export const SelectBudgetOptions=[
 
 
 ]
-export const AI_PROMPT ='Generate Travel plan for {Location}: Las Vegas ,for  {totalDays} For {traveler} with a cheap {budget}, give me a hotels options list with Hotel name ,Hotel address,price,hotelimage,url,geo coordinates,ticket Princing, rating ,Time travel each of the location for {totalDays} with eachday plan with best time to visit in JSON format'; 
+export const AIModel ='Generate Travel plan for {Location}: ,for  {totalDays} For {traveler} with a cheap {budget}, give me a hotels options list with Hotel name ,Hotel address,price,hotelimage,url,geo coordinates,ticket Princing, rating ,Time travel each of the location for {totalDays} with eachday plan with best time to visit in JSON format'; 
