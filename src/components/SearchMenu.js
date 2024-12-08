@@ -275,19 +275,19 @@ const handleGenerateTrip = () => {
 
 // Database collection adding 
 
-const SaveAiTrip= async(TripData)=>{
+// const SaveAiTrip= async(TripData)=>{
 
  
 
-  // Add a new document in collection "cities"
-  await setDoc(doc(db, "AITrips", "LA"), {
+//   // Add a new document in collection "cities"
+//   await setDoc(doc(db, "AITrips", "LA"), {
 
-    name: "Los Angeles",
-    state: "CA",
-    country: "USA"
+//     name: "Los Angeles",
+//     state: "CA",
+//     country: "USA"
 
-  });
-}
+//   });
+// }
 
 
 
