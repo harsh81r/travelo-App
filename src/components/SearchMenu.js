@@ -11,7 +11,7 @@ import { chatSession } from "../service/AIModel";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from"axios";
 
-import { doc, setDoc } from "firebase/firestore"; 
+// import { doc, setDoc } from "firebase/firestore"; 
 
 // import { doc } from "firebase/firestore";
 const countryData = {
@@ -40,6 +40,7 @@ const SearchMenu = () => {
   const[isLoginDialogOpen,setIsLoginDialogOpen]=useState(false);
   const [selectedCity, setSelectedCity] = useState(null);
  // Update state declarations
+
  const [inputValue, setInputValue] = useState({
   'no of days': ''
 });
@@ -50,13 +51,23 @@ const [travelValue, setTravelValue] = useState({
   budget: ''
 })
 
-  const handleInputChange = (field, value) => {
-    setInputValue(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
 
+
+  // const handleInputChange = (e) => {
+
+  //   const {name,value} = e.target
+
+  //   setInputValue({...inputValue,[name]:value})
+  // };
+  
+const handleInputChange=(field,value)=>{
+
+  setInputValue(prev => ({
+    ...prev,
+    [field]: value
+  }));
+}
+  
   const handleBudgetChange = (field, value) => {
     setBudgetValue(prev => ({
       ...prev,
@@ -135,18 +146,6 @@ const [travelValue, setTravelValue] = useState({
   
     ]);
   
-
-
-
-
-
-
-
-
-
-
-
-
 
     const formData = {
       people: budgetValue,
@@ -459,7 +458,10 @@ const GetUserProfile = async (tokenInfo) => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
       )}
+
+
 
       {selectedCountry && filteredCities.length > 0 && (
         <div className="mb-4">

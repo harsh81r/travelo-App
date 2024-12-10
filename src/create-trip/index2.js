@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 // import GooglePlacesAutocomplete from'react-google-places-autocomplete';
 
 import SearchMenu from '../components/SearchMenu';
 
 function Createtrip() {
+
+
 
 
  
