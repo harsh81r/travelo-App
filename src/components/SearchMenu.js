@@ -10,28 +10,13 @@ import { chatSession } from "../service/AIModel";
 // import {Button, Dialog,  Heading} from 'react-aria-components';
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from"axios";
+import { db } from "../service/firebaseConfig";
 
-// import { doc, setDoc } from "firebase/firestore"; 
+import { doc,setDoc } from "firebase/firestore";
+// import { GoogleGenerativeAI } from "@google/generative-ai";
+// import { countryData } from "./custom/CountryData";
+import countryData from "./custom/CountryData";
 
-// import { doc } from "firebase/firestore";
-const countryData = {
-  US: [
-    { city: "New York", places: ["Statue of Liberty", "Central Park", "Empire State Building"] },
-    { city: "Los Angeles", places: ["Hollywood Sign", "Santa Monica Pier", "Venice Beach"] },
-  ],
-  India: [
-    { city: "Delhi", places: ["Red Fort", "Qutub Minar", "India Gate"] },
-    { city: "Mumbai", places: ["Gateway of India", "Marine Drive", "Elephanta Caves"] },
-  ],
-  China: [
-    { city: "Beijing", places: ["Great Wall of China", "Forbidden City", "Tiananmen Square"] },
-    { city: "Shanghai", places: ["The Bund", "Yu Garden", "Oriental Pearl Tower"] },
-  ],
-  Russia: [
-    { city: "Moscow", places: ["Red Square", "Kremlin", "St. Basil's Cathedral"] },
-    { city: "Saint Petersburg", places: ["Hermitage Museum", "Peterhof Palace", "Nevsky Prospekt"] },
-  ],
-};
 
 const SearchMenu = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +24,7 @@ const SearchMenu = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const[isLoginDialogOpen,setIsLoginDialogOpen]=useState(false);
   const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedPlaces, setSelectedPlaces] = useState([]);
  // Update state declarations
 
  const [inputValue, setInputValue] = useState({
@@ -51,15 +37,6 @@ const [travelValue, setTravelValue] = useState({
   budget: ''
 })
 
-
-
-  // const handleInputChange = (e) => {
-
-  //   const {name,value} = e.target
-
-  //   setInputValue({...inputValue,[name]:value})
-  // };
-  
 const handleInputChange=(field,value)=>{
 
   setInputValue(prev => ({
@@ -152,7 +129,8 @@ const handleInputChange=(field,value)=>{
       country: selectedCountry,
       city: selectedCity?.city,
       budget: budgetValue.budge,
-      duration: inputValue['no of days']
+      duration: inputValue['no of days'],
+      places: selectedPlaces  // Add selected places to form data
   };
   useEffect(()=>{
 
@@ -172,6 +150,15 @@ const handleInputChange=(field,value)=>{
         setIsLoginDialogOpen(false);
         toast.success('Successfully signed in!');
         
+
+
+
+
+
+
+
+
+
         // Proceed with trip generation
         handleTripGeneration();
       } catch (error) {
@@ -191,6 +178,52 @@ const handleInputChange=(field,value)=>{
 
 
 
+
+
+  
+
+
+
+  const handlePlaceSelection = (place) => {
+    if (selectedPlaces.length < 5 && !selectedPlaces.includes(place)) {
+      setSelectedPlaces(prev => [...prev, place]);
+    } else if (selectedPlaces.includes(place)) {
+      setSelectedPlaces(prev => prev.filter(p => p !== place));
+    }
+  };
+
+
+const handleGenerateTrip = () => {
+  // Existing validations
+  if (!formData.duration || !formData.city || !formData.budget || !formData.people) {
+    toast("Please fill all details!");
+    return;
+  }
+
+  if (parseInt(formData.duration) > 5) {
+    toast("Trip duration cannot exceed 5 days!");
+    return;
+  }
+
+  // New place selection validation
+  if (selectedPlaces.length === 0) {
+    toast("Please select at least one place to visit!");
+    return;
+  }
+
+  const user = localStorage.getItem('user');
+  if (!user) {
+    setIsLoginDialogOpen(true);
+    return;
+  }
+
+  // If user is logged in, proceed with trip generation
+  handleTripGeneration();
+};
+
+
+// Database collection adding 
+
 const handleTripGeneration = async () => {
   try {
     // First, validate that we have all the required data
@@ -203,11 +236,13 @@ const handleTripGeneration = async () => {
     const FINAL_PROMPT = AIModel
       .replace("{Location}", formData.country || '')
       .replace("{totalDays}", formData.duration || '')
-      .replace("{traveler}", formData.people?.budget || '') // Fix the people property
+      .replace("{traveler}", formData.people?.budget || '') 
       .replace("{budget}", formData.budget || '')
       .replace("{totalDays}", formData.duration || '');
 
+    // Add more detailed logging
     console.log('Generated Prompt:', FINAL_PROMPT);
+    console.log('Chat Session:', chatSession);
 
     // Check if chatSession is properly initialized
     if (!chatSession) {
@@ -219,8 +254,8 @@ const handleTripGeneration = async () => {
 
     // Make the API call with proper error handling
     const result = await chatSession.sendMessage(FINAL_PROMPT, {
-      maxRetries: 3, // Add retries for reliability
-      timeout: 30000 // 30 second timeout
+      maxRetries: 3, 
+      timeout: 30000 
     });
 
     if (!result) {
@@ -228,148 +263,57 @@ const handleTripGeneration = async () => {
     }
 
     console.log('AI Response:', result);
+    
+    // Ensure SaveAiTrip receives the result
+    await SaveAiTrip(result.response?.text() || 'No trip details');
+    
     toast.success("Trip plan generated successfully!");
-
-    // Handle the result (you might want to display it somewhere)
-    // setTripPlan(result); // Add state for storing the trip plan
 
   } catch (error) {
     console.error("Error generating trip:", error);
     
-    // More specific error messages based on the error type
-    if (error.message.includes('Failed to fetch')) {
+    // More specific error messages
+    if (error.message.includes('aborted')) {
+      toast.error("AI service connection failed. Please check your internet connection and try again.");
+    } else if (error.message.includes('Failed to fetch')) {
       toast.error("Network error. Please check your internet connection.");
     } else if (error.message.includes('API key')) {
-      toast.error("API authentication error. Please try again later.");
+      toast.error("API authentication error. Please check your API configuration.");
     } else {
-      toast.error("Failed to generate trip plan. Please try again.");
+      toast.error(`Trip generation failed: ${error.message}`);
     }
   }
 };
 
 
+const SaveAiTrip = async (TripData) => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'));
+    
+    // Validate user and trip data
+    if (!user || !user.email) {
+      toast.error("User not authenticated");
+      return;
+    }
 
-const handleGenerateTrip = () => {
-  // Validate form data
-  if (!formData.duration || !formData.city || !formData.budget || !formData.people) {
-    toast("Please fill all details!");
-    return;
+    const docId = Date.now().toString();
+    await setDoc(doc(db, "AITrips", docId), {
+      userSelection: {
+        ...formData,
+        places: selectedPlaces  // Include selected places
+      },
+      tripdata: TripData || 'No trip details available',
+      userEmail: user.email,
+      id: docId
+    });
+
+    toast.success("Trip saved successfully");
+  } catch (error) {
+    console.error("Error saving trip:", error);
+    toast.error("Failed to save trip details");
   }
-
-  if (parseInt(formData.duration) > 5) {
-    toast("Trip duration cannot exceed 5 days!");
-    return;
-  }
-
-  const user = localStorage.getItem('user');
-  if (!user) {
-    setIsLoginDialogOpen(true);
-    return;
-  }
-
-  // If user is logged in, proceed with trip generation
-  handleTripGeneration();
-
 };
 
-// Database collection adding 
-
-// const SaveAiTrip= async(TripData)=>{
-
- 
-
-//   // Add a new document in collection "cities"
-//   await setDoc(doc(db, "AITrips", "LA"), {
-
-//     name: "Los Angeles",
-//     state: "CA",
-//     country: "USA"
-
-//   });
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const handleGenerateTrip = async () => {
-  // Validate form data
-
-// const user = localStorage.getItem('user')
-
-// if(!user){
-//   setOpenDailog(true)
-//   return;
-// }
-
-
-// const user = localStorage.getItem('user');
-// if (!user) {
-//   setIsLoginDialogOpen(true);
-//   return;
-// }
-
-
-
-//   if (!formData.duration || !formData.city || !formData.budget || !formData.people) {
-//     toast("Please fill all details!");
-//     return;
-//   }
-
-//   if (parseInt(formData.duration) > 5) {
-//     toast("Trip duration cannot exceed 5 days!");
-//     return;
-//   }
-
-//   try {
-//     const FINAL_PROMPT = AIModel
-//       .replace("{Location}", formData.country)
-//       .replace("{totalDays}", formData.duration)
-//       .replace("{traveler}", formData.people)
-//       .replace("{budget}", formData.budget)
-//       .replace("{totalDays}", formData.duration);
-
-//     console.log(FINAL_PROMPT); 
-
-//     // Fix: Use chatSession.sendMessage directly
-
-//     const result = await chatSession.sendMessage(FINAL_PROMPT);
-//     console.log(result);
-//     toast.success("Trip plan generated successfully!");
-
-//   } 
-//   catch (error) {
-//     console.error("Error generating trip:", error);
-//     toast.error("Failed to generate trip plan. Please try again.");
-//   }
-
-
-
-
-
-// const GetUserProfile =(tokenInfo)=>{
-//   axios.get(`https://www.googleapis.com/oath2/v1/userinfo?acess_token= ${tokenInfo?.access_token}`,{
-    
-    
-//     headers:{
-//       Authorization:`Bearer ${tokenInfo?.access_token}`,
-//       Accept:"application/json"
-//     }
-    
-//     }
-//   ).then((resp)=>{
-//       console.log(resp)
-//       localStorage.setItem('user',JSON.stringify(resp.data))
-      
-//     })
 
 const GetUserProfile = async (tokenInfo) => {
   try {
@@ -406,21 +350,6 @@ const GetUserProfile = async (tokenInfo) => {
   }
 };
 
-
-
-
-
-
-// Update your login success handler to use this function
-
-
-// };
-// useEffect(() => {
-//   console.log('Dialog open state:', isLoginDialogOpen);
-// }, [isLoginDialogOpen]);
-
-
-
   return (
     <div className="max-w-4xl mx-auto p-6 bg-cyan-50 shadow-lg rounded-lg">
       <h1 className="text-2xl font-semibold mb-4">Travel Destinations</h1>
@@ -444,7 +373,7 @@ const GetUserProfile = async (tokenInfo) => {
         </select>
       </div>
 
-      {selectedCountry && (
+      {/* {selectedCountry && (
         <div className="mb-4">
           <label htmlFor="city" className="block text-sm font-medium text-gray-700">
             Search City
@@ -459,7 +388,7 @@ const GetUserProfile = async (tokenInfo) => {
           />
         </div>
 
-      )}
+      )} */}
 
 
 
@@ -483,16 +412,62 @@ const GetUserProfile = async (tokenInfo) => {
         </div>
       )}
 
-      {selectedCity && (
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold">Top Places in {selectedCity.city}</h2>
-          <ul className="list-disc ml-6 mt-2">
-            {selectedCity.places.map((place, index) => (
-              <li key={index} className="text-gray-800">{place}</li>
-            ))}
-          </ul>
+
+
+ {selectedCity && (
+    <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold mb-4">
+        Select Places to Visit in {selectedCity.city} 
+        {selectedPlaces.length > 0 && ` (${selectedPlaces.length}/5)`}
+      </h2>
+      
+      {selectedPlaces.length < 5 && (
+        <div className="relative mb-4">
+          <select
+            value=""
+            onChange={(e) => {
+              const place = e.target.value;
+              if (place) {
+                handlePlaceSelection(place);
+              }
+            }}
+            className="w-full border rounded px-3 py-2 appearance-none"
+          >
+            <option value="">Choose a Place</option>
+            {selectedCity.places
+              .filter(place => !selectedPlaces.includes(place))
+              .map((place, index) => (
+                <option key={index} value={place}>
+                  {place}
+                </option>
+              ))
+            }
+          </select>
         </div>
       )}
+
+
+      {/* Selected Places Display */}
+      {selectedPlaces.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {selectedPlaces.map((place, index) => (
+            <span 
+              key={index} 
+              className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+            >
+              {place}
+              <button 
+                onClick={() => handlePlaceSelection(place)}
+                className="ml-2 text-red-500 hover:text-red-700"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
 
 
 <br></br>
@@ -565,9 +540,6 @@ className={`${travelValue?.budget=== item.people &&'shadow-lg border-black' } p-
 
 <ToastContainer />
 </div>
-
-
-
 
 <div className="max-w-4xl mx-auto p-6 bg-gray-200 shadow-lg rounded-lg">
     {/* ... other content ... */}
@@ -659,3 +631,25 @@ className={`${travelValue?.budget=== item.people &&'shadow-lg border-black' } p-
 }
 
 export default SearchMenu;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

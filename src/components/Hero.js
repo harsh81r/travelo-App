@@ -35,7 +35,7 @@ const Hero = () => { // Fixed function declaration
                     <div className="relative z-10 max-w-screen-xl px-4 pb-20 pt-10 sm:py-24 mx-auto sm:px-6 lg:px-8">
                         <div className="max-w-xl sm:mt-1 mt-80 space-y-8 text-center sm:text-right sm:ml-auto">
                             <h2 className=" text-white text-4xl font-bold sm:text-5xl">
-                               Make your trip with <span className='text-indigo-800 font-serif '>Travelo</span>
+                               Make your trip with <span className='text-5xl font-serif text-cyan-300 '>travelo</span>
                                 <span className="hidden sm:block text-4xl">personalized</span> {/* Corrected typo */}
                             </h2>
 
@@ -44,10 +44,10 @@ const Hero = () => { // Fixed function declaration
                                 to="/create-trip"
                             >
                                 <svg
-                                    fill="white"
+                                    fill="blue"
                                     width="24"
-                                    height="24"
-                                    xmlns="http://www.w3.org/2000/svg"
+                                    height="0"
+                                    // xmlns="http://www.w3.org/2000/svg"
                                     fillRule="evenodd"
                                     clipRule="evenodd"
                                 >
@@ -56,14 +56,15 @@ const Hero = () => { // Fixed function declaration
 
                                 &nbsp; Get Started
                             </Link>
+
                         </div>
                     </div>
 
                     <div
-                        className="absolute top-0 left-0 w-full h-full bg-cover bg-center transition-all duration-1000"
+                        className="absolute top-0 left-0 w-full h-full bg-cover bg-center transition-all duration-1000 opacity-40 "
                         style={{ backgroundImage: backgroundImages[currentIndex] }}
                     >
-                        <div className="flex items-end justify-center h-full text-3xl font-serif text-white text-opacity-60">
+                        <div className="flex items-end justify-center h-full text-3xl font-serif  text-teal-200 ">
                             Best Hotel with Best choice
                         </div>
                     </div>
@@ -73,15 +74,15 @@ const Hero = () => { // Fixed function declaration
             </div>
             <div className='flex flex-col items-center mx-4 gap-9'> {/* Updated mx-4 for better responsiveness on mobile */}
                 <h1 className='font-extrabold text[50px] text-orange-600 text-clip mt-16'>
-                    <span className='text-[#f56551] text-4xl '>Discover Your Next Adventure With Travelo: </span>
+                    <span className='text-[#36acb7] text-4xl '>Discover Your Next Adventure With Travelo: </span>
                     <span className='text-2xl hover:text-sky-500'>personalized Itineraries at your Fingertips</span>  {/* Corrected typo */}
                 </h1>
             </div>
 
             <img className=" w-full" src='icons/template01.svg' /> {/* Updated for responsiveness */}
             {/* <img className=" w-full" src='icons/template03.svg' /> */}
-            <img className=" w-full" src='icons/template04.svg' />
-            <img className=" w-full" src='icons/template05.svg' />
+            <img className=" w-full mx-5" src='icons/template04.svg' />
+            {/* <img className=" w-full" src='icons/template05.svg' /> */}
 
         </div>
     );

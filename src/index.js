@@ -8,7 +8,7 @@ import Createtrip from './create-trip/index2';
 import Header from './components/custom/Header';
 // import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import Viewtrip from './view-trip/[tripId]/index2';
+import Viewtrip from './view-trip/[tripId]/index3';
 
 
 const router = createBrowserRouter([
