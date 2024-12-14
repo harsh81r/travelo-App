@@ -57,4 +57,31 @@ export const SelectBudgetOptions=[
 
 
 ]
-export const AIModel ='Generate Travel plan for {Location}: ,for  {totalDays}days For {traveler} with a cheap {budget}, give me a hotels options list with Hotel name ,Hotel address,price,hotelimage,hotelImage-url,geo coordinates,ticket Princing, rating ,Time travel each of the location for {totalDays}days with eachday plan with best time to visit in JSON format'; 
+// export const AIModel ='Generate Travel plan for {Location}: ,for  {totalDays}days For {traveler} with a  {budget} budget, Please provide a list of hotel options that includes
+//  Hotel name
+//  Hotel address
+//  Price
+//  Hotel image URL
+//  Place URL (link to the hotel or booking page)
+//  Geo-coordinates
+//  Ticket pricing for attractions
+//  Rating
+//  Travel time for each location for 2 days
+//  Each of the location for{totalDays}day's plan with the best time to visit
+
+// Please return the information in JSON format. '
+
+
+//  give me  hotels option list with Hotels name ,Hotels address,price,hotelsimage,Hotel image URLs , Place Image URLs geo coordinates,ticket Princing, rating ,Time travel each of the location for {totalDays} days with eachday plan with best time to visit in JSON format';
+export const AIModel=`Generate Travel plan for {Location} for {totalDays} days for {traveler} with a {budget} budget. Please provide a list of hotel options that includes
+- Hotel name
+- Hotel address
+- Price"
+- Hotel URL
+- Place URL (link to the hotel or booking page)
+- Geo-coordinates
+- Ticket pricing for attractions
+- Rating
+- Travel time for each location for {totalDays} days
+- Each location's plan with the best time to visit
+"Please return the information in JSON format.`;

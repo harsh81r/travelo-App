@@ -69,7 +69,6 @@ const Hero = () => { // Fixed function declaration
                         </div>
                     </div>
 
-                    <h1 className="text-center text-2xl sm:text-5xl py-10 font-medium">Let's Go</h1>
                 </aside>
             </div>
             <div className='flex flex-col items-center mx-4 gap-9'> {/* Updated mx-4 for better responsiveness on mobile */}
